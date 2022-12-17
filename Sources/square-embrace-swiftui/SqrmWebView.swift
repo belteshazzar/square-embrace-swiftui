@@ -7,9 +7,9 @@
 import SwiftUI
 import WebKit
 
-struct SqrmWebView: XViewRepresentable {
-  static let html = Bundle.main.url(forResource: "html", withExtension: nil)!
-  static let index = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "html")!
+public struct SqrmWebView: XViewRepresentable {
+  static let html = Bundle.module.url(forResource: "html", withExtension: nil)!
+  static let index = Bundle.module.url(forResource: "index", withExtension: "html", subdirectory: "html")!
   
 #if os(iOS)
   public func makeUIView(context: Context) -> WKWebView {
@@ -33,8 +33,12 @@ struct SqrmWebView: XViewRepresentable {
   
   @Binding var text: String
   
-  class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+  public init(text : Binding<String>) {
+    self._text = text
+  }
+  
+  public class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
+    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
     }
     
     private var owner: SqrmWebView
@@ -43,13 +47,13 @@ struct SqrmWebView: XViewRepresentable {
     }
     
     var webView: WKWebView?
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+    public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
       self.webView = webView
       self.owner.updateText(webView)
     }
   }
   
-  func makeCoordinator() -> Coordinator {
+  public func makeCoordinator() -> Coordinator {
     return Coordinator(owner: self)
   }
   

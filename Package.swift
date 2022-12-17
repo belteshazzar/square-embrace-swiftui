@@ -24,7 +24,8 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "square-embrace-swiftui",
-            dependencies: []),
+            dependencies: [],
+            resources: [ .copy("html") ]),
         .testTarget(
             name: "square-embrace-swiftuiTests",
             dependencies: ["square-embrace-swiftui"]),

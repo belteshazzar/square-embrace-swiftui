@@ -13,7 +13,7 @@ import UIKit
 import AppKit
 #endif
 
-public class HighlightingTextStorage: NSTextStorage {
+class HighlightingTextStorage: NSTextStorage {
   
   var backingStore = NSTextStorage()
   var syntaxHighlighter = SyntaxHighlighter()

@@ -7,17 +7,39 @@
 
 import SwiftUI
 
-struct EditorView: XViewRepresentable {
+public struct EditorView: XViewRepresentable {
   
-  @Binding var text: String
-  
+  @Binding var text : String
   let textStorage = HighlightingTextStorage()
   
-  func makeCoordinator() -> Coordinator {
+  public init(text : Binding<String>) {
+    self._text = text
+  }
+  
+  public func makeCoordinator() -> Coordinator {
     return Coordinator(self)
   }
   
 #if os(iOS)
+
+  public class Coordinator: NSObject, UITextViewDelegate {
+    var parent: EditorView
+    
+    init(_ parent: EditorView) {
+      self.parent = parent
+    }
+    
+    public func textViewDidChange(_ textView: UITextView) {
+      self.parent.text = textView.text!
+    }
+    
+    public func textDidChange(_ notification: Notification) {
+      guard let textView = notification.object as? UITextView else {return}
+
+      self.parent.text = textView.text!
+    }
+  }
+  
   public func makeUIView(context: Context) -> UITextView {
     let layoutManager = NSLayoutManager()
     textStorage.addLayoutManager(layoutManager)
@@ -34,30 +56,29 @@ struct EditorView: XViewRepresentable {
     return textView
   }
   
-  class Coordinator: NSObject, UITextViewDelegate {
+
+  public func updateUIView(_ uiView: UITextView, context: Context) {
+  }
+
+#elseif os(macOS)
+  
+  public class Coordinator: NSObject, NSTextViewDelegate {
     var parent: EditorView
     
     init(_ parent: EditorView) {
       self.parent = parent
     }
     
-    func textViewDidChange(_ textView: UITextView) {
-      self.parent.text = textView.text
+    func textViewDidChange(_ textView: NSTextView) {
+      self.parent.text = textView.string
     }
     
-    func textDidChange(_ notification: Notification) {
-      guard let textView = notification.object as? UITextView else {return}
-
-      self.parent.text = textView.text
+    public func textDidChange(_ notification: Notification) {
+      guard let textView = notification.object as? NSTextView else {return}
+      self.parent.text = textView.string
     }
   }
 
-  public func updateUIView(_ uiView: UITextView, context: Context) {
-  }
-#endif
-  
-#if os(macOS)
-  
   public func makeNSView(context: Context) -> NSScrollView {
     let scrollView = NSTextView.scrollableTextView()
     guard let textView = scrollView.documentView as? NSTextView else { return scrollView }
@@ -72,25 +93,9 @@ struct EditorView: XViewRepresentable {
     textView.lnv_setUpLineNumberView()
     return scrollView
   }
-  
-  class Coordinator: NSObject, NSTextViewDelegate {
-    var parent: EditorView
-    
-    init(_ parent: EditorView) {
-      self.parent = parent
-    }
-    
-    func textViewDidChange(_ textView: NSTextView) {
-      self.parent.text = textView.string
-    }
-    
-    func textDidChange(_ notification: Notification) {
-      guard let textView = notification.object as? NSTextView else {return}
-      self.parent.text = textView.string
-    }
-  }
-  
+
   public func updateNSView(_ view: NSScrollView, context: Context) {
   }
+
 #endif
 }
